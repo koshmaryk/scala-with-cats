@@ -1,7 +1,15 @@
 package sandbox.chapter01
 
+import sandbox.chapter03.Box
+
 trait Printable[A] { self => /* private[this] val self = this, an alias for this */
   def format(value: A): String
+
+  def contramap[B](func: B => A): Printable[B] = // (value: B) => self.format(func(value))
+    new Printable[B] {
+      def format(value: B): String =
+        self.format(func(value))
+    }
 }
 
 object PrintableInstances {
@@ -21,6 +29,15 @@ object PrintableInstances {
       s"$name is a $age year-old $color cat."
     }
   }
+
+  implicit val booleanPrintable: Printable[Boolean] =
+    new Printable[Boolean] {
+      def format(value: Boolean): String =
+        if(value) "yes" else "no"
+    }
+
+  implicit def boxPrintable[A](implicit p: Printable[A]): Printable[Box[A]] =
+    p.contramap[Box[A]](_.value)
 }
 
 /* Interface Object */
